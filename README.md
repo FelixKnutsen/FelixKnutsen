@@ -22,4 +22,5 @@ LinkedIn: https://www.linkedin.com/in/felix-knutsen/<p></p>
  <br>
 
 <h3>Thanks for checking out my profile!</h3>
-Be sure to check out my work-in-progress portofolio webpage: <a href=felixknutsen.com >felixknutsen.com</a><br>
+Be sure to check out my work-in-progress portofolio webpage: 
+<a href="https://felixknutsen.com" target="_blank" rel="noopener noreferrer">felixknutsen.com</a><br>
