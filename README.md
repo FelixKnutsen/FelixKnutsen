@@ -1,12 +1,12 @@
 <h1>👋 Hi, I'm Felix Fabricius Knutsen!</h1>
 
 <h2>🎓 About Me:</h2>
-<p>I'm a 3rd-year bachelor student in Information Systems at the University of Agder (Kristiansand). I’m passionate about development and business technology. My current goal is to increase my knowledge about backend development.</p>
+<p>I'm a first-year master student in Information Systems at the University of Agder (Kristiansand). I’m passionate about development and business technology.</p>
 <br>
 <h3>Projects:</h3>
 
 <p>🔭 Currently project: Portfolio website </p>
-<p>💡 Future project: Receipt Storage App, and Recreating checkout system for grocery stores</p><br>
+<p>💡 Future project: Receipt Storage App, Home server</p><br>
 
 
 <h2>🌍 Connect with Me:</h2>
