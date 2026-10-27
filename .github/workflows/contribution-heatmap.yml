@@ -1,4 +1,4 @@
-name: Update five-year contribution heatmap
+name: Update contribution heatmap and snake
 
 on:
   workflow_dispatch:
@@ -9,12 +9,13 @@ on:
       - main
     paths:
       - "scripts/generate-contribution-heatmap.mjs"
+      - ".github/workflows/contribution-heatmap.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: contribution-heatmap
+  group: contribution-visualisations
   cancel-in-progress: false
 
 jobs:
@@ -29,12 +30,20 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Fetch contribution calendars and render SVGs
+      - name: Generate contribution snake animations
+        uses: Platane/snk/svg-only@v3
+        with:
+          github_user_name: FelixKnutsen
+          outputs: |
+            dist/github-contribution-grid-snake.svg?color_snake=3B45F2&color_dots=EBEDF0,C8CCFF,9CA3FF,707BFF,3B45F2
+            dist/github-contribution-grid-snake-dark.svg?palette=github-dark&color_snake=8D95FF
+
+      - name: Generate five-year contribution heatmaps
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/generate-contribution-heatmap.mjs
 
-      - name: Publish heatmaps to the output branch
+      - name: Publish all visuals to the output branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

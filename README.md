@@ -114,17 +114,27 @@ A personal project idea focused on making digital receipts easier to organise an
 ## GitHub activity
 
 <div align="center">
-  <img height="165" src="https://github-readme-stats.vercel.app/api?username=FelixKnutsen&show_icons=true&rank_icon=github&hide_border=true&theme=transparent" alt="GitHub statistics for FelixKnutsen" />
+  <img height="165" src="https://github-readme-stats.vercel.app/api?username=FelixKnutsen&show_icons=true&rank_icon=github&hide=contribs&hide_border=true&theme=transparent" alt="GitHub statistics for FelixKnutsen" />
 </div>
 
 ### Contribution history · 2022–2026
 
-The heatmap combines five calendar years in one view. 2026 displays contributions year-to-date.
+A five-year view with a built-in activity summary: total contributions, active days, longest streak and peak day. The peak day is outlined, and hovering over any square reveals its date and contribution count. Each row also shows that year’s active days. 2026 displays contributions year-to-date.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/contributions-2022-2026-dark.svg" />
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/contributions-2022-2026-light.svg" />
   <img alt="Five-year GitHub contribution heatmap for FelixKnutsen, covering 2022 through 2026" src="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/contributions-2022-2026-light.svg" width="100%" />
+</picture>
+
+### Contribution snake
+
+The animated snake visualises my recent GitHub contribution grid. The custom heatmap above provides the longer 2022–2026 view.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/github-contribution-grid-snake-dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/github-contribution-grid-snake.svg" />
+  <img alt="Animated snake travelling through FelixKnutsen's recent GitHub contribution grid" src="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/github-contribution-grid-snake.svg" width="100%" />
 </picture>
 
 ---
