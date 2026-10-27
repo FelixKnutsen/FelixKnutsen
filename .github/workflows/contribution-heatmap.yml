@@ -1,4 +1,4 @@
-name: Update contribution heatmap and snake
+name: Update animated five-year contribution heatmap
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: contribution-visualisations
+  group: contribution-heatmap
   cancel-in-progress: false
 
 jobs:
@@ -23,30 +23,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "24"
+          package-manager-cache: false
 
-      - name: Generate contribution snake animations
-        uses: Platane/snk/svg-only@v3
-        with:
-          github_user_name: FelixKnutsen
-          outputs: |
-            dist/github-contribution-grid-snake.svg?color_snake=3B45F2&color_dots=EBEDF0,C8CCFF,9CA3FF,707BFF,3B45F2
-            dist/github-contribution-grid-snake-dark.svg?palette=github-dark&color_snake=8D95FF
-
-      - name: Generate five-year contribution heatmaps
+      - name: Generate the combined five-year animated heatmap
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/generate-contribution-heatmap.mjs
 
-      - name: Publish all visuals to the output branch
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: output
-          publish_dir: ./dist
-          force_orphan: true
+      - name: Preserve generated files for publishing
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/contribution-heatmap-output"
+          cp dist/contributions-2022-2026-snake-light.svg "$RUNNER_TEMP/contribution-heatmap-output/"
+          cp dist/contributions-2022-2026-snake-dark.svg "$RUNNER_TEMP/contribution-heatmap-output/"
+
+      - name: Publish the two theme variants to the output branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git branch -D output 2>/dev/null || true
+          git checkout --orphan output
+          git rm -rf . || true
+          cp "$RUNNER_TEMP/contribution-heatmap-output/contributions-2022-2026-snake-light.svg" .
+          cp "$RUNNER_TEMP/contribution-heatmap-output/contributions-2022-2026-snake-dark.svg" .
+          git add -f contributions-2022-2026-snake-light.svg contributions-2022-2026-snake-dark.svg
+          git commit -m "Update animated 2022-2026 contribution heatmap"
+          git push origin HEAD:output --force
