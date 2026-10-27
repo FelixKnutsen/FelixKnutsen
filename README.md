@@ -117,12 +117,14 @@ A personal project idea focused on making digital receipts easier to organise an
   <img height="165" src="https://github-readme-stats.vercel.app/api?username=FelixKnutsen&show_icons=true&rank_icon=github&hide_border=true&theme=transparent" alt="GitHub statistics for FelixKnutsen" />
 </div>
 
-### Contribution activity
+### Contribution history · 2022–2026
+
+The heatmap combines five calendar years in one view. 2026 displays contributions year-to-date.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/github-contribution-grid-snake-dark.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/github-contribution-grid-snake.svg" />
-  <img alt="Animated snake tracing FelixKnutsen's GitHub contribution graph" src="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/github-contribution-grid-snake.svg" width="100%" />
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/contributions-2022-2026-dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/contributions-2022-2026-light.svg" />
+  <img alt="Five-year GitHub contribution heatmap for FelixKnutsen, covering 2022 through 2026" src="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/contributions-2022-2026-light.svg" width="100%" />
 </picture>
 
 ---
