@@ -15,8 +15,7 @@ const ROW_HEIGHT = 116;
 const WIDTH = 900;
 const HEIGHT = HEADER_HEIGHT + (END_YEAR - START_YEAR + 1) * ROW_HEIGHT + 42;
 const SNAKE_DURATION_SECONDS = 120;
-const SNAKE_BODY_SEGMENTS = 10;
-const SNAKE_SEGMENT_SPACING = 12;
+const SNAKE_SEGMENT_SPACING = 9.2;
 const SNAKE_LEFT_RAIL_X = 104;
 const SNAKE_RIGHT_RAIL_X = 833;
 const SNAKE_RETURN_LEFT_X = 112;
@@ -188,24 +187,14 @@ function calculateInsights(years) {
     }
   }
 
-  const peakDay = allDays.reduce((best, day) => day.count > (best?.count ?? 0) ? day : best, null);
-  const hasPeak = Boolean(peakDay && peakDay.count > 0);
-  const bestYear = [...enrichedYears].sort((a, b) => b.total - a.total)[0];
-
   return {
     years: enrichedYears,
     total,
     activeDays,
     longestStreak,
-    peakDay: hasPeak ? peakDay : null,
-    bestYear,
   };
 }
 
-function shortDate(dateString) {
-  const date = new Date(`${dateString}T00:00:00Z`);
-  return `${date.getUTCDate()} ${monthNames[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
-}
 
 function cellKey(year, col, weekday) {
   return `${year}:${col}:${weekday}`;
@@ -291,21 +280,45 @@ function renderEatAnimation(baseFill, fraction, palette, duration = SNAKE_DURATI
   return `<animate attributeName="fill" values="${baseFill};${baseFill};${palette.empty};${palette.empty};${baseFill}" keyTimes="0;${holdAt.toFixed(5)};${eatAt.toFixed(5)};0.9999;1" dur="${duration}s" repeatCount="indefinite" />`;
 }
 
-function renderSnake(track, palette) {
+function renderSnake(track, palette, growthFractions) {
   const elements = [];
   const speed = track.length / SNAKE_DURATION_SECONDS;
   const delayPerSegment = SNAKE_SEGMENT_SPACING / speed;
 
-  // Draw the tail first so the head remains on top of the body.
-  for (let index = SNAKE_BODY_SEGMENTS; index >= 1; index -= 1) {
+  // Each active contribution day adds one body segment. A segment stays hidden
+  // until the head reaches the corresponding active square on this animation loop.
+  // Drawing the tail first keeps the head visible above the body.
+  for (let index = growthFractions.length; index >= 1; index -= 1) {
     const delay = index * delayPerSegment;
     const begin = -(SNAKE_DURATION_SECONDS - delay);
-    const radius = Math.max(2.7, 4.1 - index * 0.1);
-    elements.push(`<circle cx="0" cy="0" r="${radius.toFixed(2)}" fill="${palette.snake}" stroke="${palette.card}" stroke-width="1.25"><animateMotion dur="${SNAKE_DURATION_SECONDS}s" begin="${begin.toFixed(4)}s" repeatCount="indefinite" rotate="auto"><mpath href="#snake-track" xlink:href="#snake-track" /></animateMotion></circle>`);
+    const growAt = Math.max(0.001, Math.min(0.998, growthFractions[index - 1]));
+    const holdAt = Math.max(0, growAt - 0.0001);
+    const radius = 4.05;
+    elements.push(
+      `<circle cx="0" cy="0" r="${radius}" fill="${palette.snake}" stroke="${palette.card}" stroke-width="0.8" opacity="0">` +
+      `<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;${holdAt.toFixed(5)};${growAt.toFixed(5)};0.9999;1" dur="${SNAKE_DURATION_SECONDS}s" repeatCount="indefinite" />` +
+      `<animateMotion dur="${SNAKE_DURATION_SECONDS}s" begin="${begin.toFixed(4)}s" repeatCount="indefinite" rotate="auto"><mpath href="#snake-track" xlink:href="#snake-track" /></animateMotion>` +
+      `</circle>`,
+    );
   }
 
-  elements.push(`<g aria-label="Animated snake eating the five-year contribution heatmap"><animateMotion dur="${SNAKE_DURATION_SECONDS}s" repeatCount="indefinite" rotate="auto"><mpath href="#snake-track" xlink:href="#snake-track" /></animateMotion><circle cx="0" cy="0" r="5.1" fill="${palette.snake}" stroke="${palette.card}" stroke-width="1.5"/><circle cx="2.1" cy="-1.65" r="1.05" fill="${palette.snakeEye}"/><circle cx="2.1" cy="1.65" r="1.05" fill="${palette.snakeEye}"/></g>`);
+  elements.push(`<g aria-label="Animated snake that grows by one body segment each time it eats an active contribution square"><animateMotion dur="${SNAKE_DURATION_SECONDS}s" repeatCount="indefinite" rotate="auto"><mpath href="#snake-track" xlink:href="#snake-track" /></animateMotion><circle cx="0" cy="0" r="5.1" fill="${palette.snake}" stroke="${palette.card}" stroke-width="1.5"/><circle cx="2.1" cy="-1.65" r="1.05" fill="${palette.snakeEye}"/><circle cx="2.1" cy="1.65" r="1.05" fill="${palette.snakeEye}"/></g>`);
   return elements.join('\n');
+}
+
+function getGrowthFractions(years, track) {
+  const growthFractions = [];
+  for (const yearData of years) {
+    for (const [date, count] of yearData.counts) {
+      if (count <= 0) continue;
+      const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
+      const col = dayColumn(date, yearData.year);
+      const distance = track.distanceByCell.get(cellKey(yearData.year, col, weekday));
+      if (distance !== undefined) growthFractions.push(distance / track.length);
+    }
+  }
+  growthFractions.sort((a, b) => a - b);
+  return growthFractions;
 }
 
 function renderSvg(years, theme, generatedOn, preview = false) {
@@ -313,12 +326,13 @@ function renderSvg(years, theme, generatedOn, preview = false) {
   const insights = calculateInsights(years);
   const currentEndLabel = years.at(-1)?.endDate ?? `${END_YEAR}-01-01`;
   const track = buildSnakeTrack(years);
+  const growthFractions = getGrowthFractions(years, track);
   const elements = [];
   const font = '-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif';
 
   elements.push(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}" role="img" aria-labelledby="title desc">`);
   elements.push(`<title id="title">Animated GitHub contribution heatmap for ${START_YEAR}–${END_YEAR}</title>`);
-  elements.push(`<desc id="desc">A single animated five-year contribution heatmap for ${escapeXml(USERNAME)}, generated on ${escapeXml(generatedOn)}. The snake travels across the grid and consumes active contribution squares before the animation resets. ${numberFormat.format(insights.total)} total contributions, ${numberFormat.format(insights.activeDays)} active days, and a longest streak of ${insights.longestStreak} days.</desc>`);
+  elements.push(`<desc id="desc">A single animated five-year contribution heatmap for ${escapeXml(USERNAME)}, generated on ${escapeXml(generatedOn)}. The snake grows one body segment each time it consumes an active contribution day, then resets for the next loop. ${numberFormat.format(insights.total)} total contributions, ${numberFormat.format(insights.activeDays)} active days, and a longest streak of ${insights.longestStreak} days.</desc>`);
   elements.push(`<defs><path id="snake-track" d="${track.path}" fill="none" /></defs>`);
   elements.push(`<text x="20" y="28" fill="${palette.text}" font-family="${font}" font-size="19" font-weight="700">GitHub contributions · ${START_YEAR}–${END_YEAR}</text>`);
   const subtitle = preview
@@ -328,17 +342,13 @@ function renderSvg(years, theme, generatedOn, preview = false) {
 
   const cardY = 61;
   const cardH = 54;
-  const cardW = 210;
-  const cardGap = 8;
+  const cardW = 280;
+  const cardGap = 10;
   const firstCardX = 18;
-  const peakValue = insights.peakDay
-    ? `${numberFormat.format(insights.peakDay.count)} · ${shortDate(insights.peakDay.date)}`
-    : 'No contributions yet';
   const cards = [
     { label: 'TOTAL CONTRIBUTIONS', value: numberFormat.format(insights.total), size: 19 },
     { label: 'ACTIVE DAYS', value: numberFormat.format(insights.activeDays), size: 19 },
     { label: 'LONGEST STREAK', value: `${numberFormat.format(insights.longestStreak)} day${insights.longestStreak === 1 ? '' : 's'}`, size: 18 },
-    { label: 'PEAK DAY', value: peakValue, size: peakValue.length > 15 ? 13 : 17 },
   ];
   cards.forEach((card, index) => {
     const x = firstCardX + index * (cardW + cardGap);
@@ -372,18 +382,11 @@ function renderSvg(years, theme, generatedOn, preview = false) {
       const x = GRID_X + col * PITCH;
       const y = rowTop + 25 + weekday * PITCH;
       const title = `${date}: ${numberFormat.format(count)} contribution${count === 1 ? '' : 's'}`;
-      const isPeak = insights.peakDay?.date === date;
-      const peakMark = isPeak ? ` stroke="${palette.accent}" stroke-width="1.5"` : '';
-      let cellMarkup = `<rect x="${x}" y="${y}" width="${SQUARE}" height="${SQUARE}" rx="2" fill="${contributionFill(count, palette)}"${peakMark}><title>${escapeXml(title)}</title>`;
+      let cellMarkup = `<rect x="${x}" y="${y}" width="${SQUARE}" height="${SQUARE}" rx="2" fill="${contributionFill(count, palette)}"><title>${escapeXml(title)}</title>`;
       if (count > 0) {
         const distance = track.distanceByCell.get(cellKey(year, col, weekday));
         const fraction = distance === undefined ? 0.5 : distance / track.length;
         cellMarkup += renderEatAnimation(contributionFill(count, palette), fraction, palette);
-        if (isPeak) {
-          const eatAt = Math.max(0.001, Math.min(0.998, fraction));
-          const holdAt = Math.max(0.0001, eatAt - 0.0001);
-          cellMarkup += `<animate attributeName="stroke" values="${palette.accent};${palette.accent};${palette.empty};${palette.empty};${palette.accent}" keyTimes="0;${holdAt.toFixed(5)};${eatAt.toFixed(5)};0.9999;1" dur="${SNAKE_DURATION_SECONDS}s" repeatCount="indefinite" />`;
-        }
       }
       cellMarkup += '</rect>';
       elements.push(cellMarkup);
@@ -393,7 +396,7 @@ function renderSvg(years, theme, generatedOn, preview = false) {
   const footerY = HEIGHT - 20;
   const footerText = preview
     ? 'Illustrative preview only · real totals appear after the GitHub Actions workflow runs'
-    : `One square per day · snake consumes active squares · data through ${currentEndLabel}`;
+    : `One square per day · snake grows as it eats active squares · data through ${currentEndLabel}`;
   elements.push(`<text x="20" y="${footerY + 4}" fill="${palette.muted}" font-family="${font}" font-size="9">${escapeXml(footerText)}</text>`);
   elements.push(`<text x="${WIDTH - 156}" y="${footerY + 4}" fill="${palette.muted}" font-family="${font}" font-size="10">Less</text>`);
   const legendStart = WIDTH - 122;
@@ -401,7 +404,7 @@ function renderSvg(years, theme, generatedOn, preview = false) {
     elements.push(`<rect x="${legendStart + index * 13}" y="${footerY - 7}" width="9" height="9" rx="2" fill="${contributionFill(count, palette)}"/>`);
   });
   elements.push(`<text x="${WIDTH - 35}" y="${footerY + 4}" fill="${palette.muted}" font-family="${font}" font-size="10">More</text>`);
-  elements.push(renderSnake(track, palette));
+  elements.push(renderSnake(track, palette, growthFractions));
   elements.push('</svg>');
 
   return `${elements.join('\n')}\n`;

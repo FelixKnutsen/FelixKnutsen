@@ -117,14 +117,11 @@ A personal project idea focused on making digital receipts easier to organise an
   <img height="165" src="https://github-readme-stats.vercel.app/api?username=FelixKnutsen&show_icons=true&rank_icon=github&hide=contribs&hide_border=true&theme=transparent" alt="GitHub statistics for FelixKnutsen" />
 </div>
 
-### Contribution snake · 2022–2026
-
-One animated heatmap for the full 2022–2026 period. The snake travels across the five-year contribution grid and consumes active squares as it moves, then the animation resets. The graphic includes total contributions, active days, longest streak, peak day and yearly activity. 2026 shows contributions year-to-date.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/contributions-2022-2026-snake-dark.svg" />
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/contributions-2022-2026-snake-light.svg" />
-  <img alt="Animated GitHub contribution heatmap for FelixKnutsen from 2022 to 2026, with a snake consuming active contribution squares" src="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/contributions-2022-2026-snake-light.svg" width="100%" />
+  <img alt="Animated GitHub contribution heatmap for FelixKnutsen from 2022 to 2026, with a snake that grows as it consumes active contribution squares" src="https://raw.githubusercontent.com/FelixKnutsen/FelixKnutsen/output/contributions-2022-2026-snake-light.svg" width="100%" />
 </picture>
 
 ---
